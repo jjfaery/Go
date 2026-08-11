@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>棋苑 Chinese Board Games — Go &amp; Gomoku</title>
+<meta name="description" content="Play Go (围棋) and Gomoku (五子棋) online — 2 player, vs computer, with hints and rules to learn.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='%23c99450'/%3E%3Ccircle cx='38' cy='42' r='20' fill='%23111'/%3E%3Ccircle cx='64' cy='60' r='20' fill='%23f5f5f5'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <button id="btn-home" class="brand" title="Home">
+    <span class="brand-cn">棋苑</span>
+    <span class="brand-en">Chinese Board Games</span>
+  </button>
+  <nav class="topnav">
+    <button id="btn-nav-home" class="navlink">Home</button>
+  </nav>
+</header>
+
+<main id="app">
+
+  <!-- HOME -->
+  <section id="screen-home" class="screen active">
+    <div class="hero">
+      <h1>围棋 &amp; 五子棋</h1>
+      <p>Classic Chinese board games, right in your browser. Play a friend, challenge the computer, or learn the rules with live hints.</p>
+    </div>
+    <div class="game-cards">
+      <button class="game-card" data-game="go">
+        <div class="card-glyph">⚫⚪</div>
+        <h2>围棋 <span>Go (Weiqi)</span></h2>
+        <p>Surround territory and capture your opponent's stones. Deep strategy on a 9×9, 13×13 or 19×19 board.</p>
+        <span class="cta">Play Go →</span>
+      </button>
+      <button class="game-card" data-game="gomoku">
+        <div class="card-glyph">●○●</div>
+        <h2>五子棋 <span>Gomoku</span></h2>
+        <p>Get five stones in a row — horizontally, vertically, or diagonally — before your opponent does.</p>
+        <span class="cta">Play Gomoku →</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- MODE SELECT -->
+  <section id="screen-mode" class="screen">
+    <button class="back-link" data-back="home">← Back</button>
+    <h2 id="mode-title">Choose how to play</h2>
+
+    <div class="option-block" id="block-boardsize">
+      <h3>Board size</h3>
+      <div class="pill-row" id="boardsize-row"></div>
+    </div>
+
+    <div class="option-block">
+      <h3>Mode</h3>
+      <div class="pill-row" id="mode-row">
+        <button class="pill" data-mode="2p">👥 2 Players (same device)</button>
+        <button class="pill" data-mode="cpu">🤖 vs Computer</button>
+        <button class="pill" data-mode="learn">📖 Learn &amp; Practice</button>
+      </div>
+    </div>
+
+    <div class="option-block" id="block-difficulty" hidden>
+      <h3>Computer difficulty</h3>
+      <div class="pill-row" id="difficulty-row">
+        <button class="pill" data-difficulty="easy">Easy</button>
+        <button class="pill" data-difficulty="medium">Medium</button>
+        <button class="pill" data-difficulty="hard">Hard</button>
+      </div>
+    </div>
+
+    <div class="option-block" id="block-color" hidden>
+      <h3>Play as</h3>
+      <div class="pill-row" id="color-row">
+        <button class="pill" data-color="1">⚫ Black (moves first)</button>
+        <button class="pill" data-color="2">⚪ White</button>
+      </div>
+    </div>
+
+    <button id="btn-start-game" class="btn-primary" hidden>Start Game</button>
+  </section>
+
+  <!-- GAME -->
+  <section id="screen-game" class="screen">
+    <button class="back-link" data-back="mode">← Change setup</button>
+    <div class="game-layout">
+      <div class="board-wrap">
+        <canvas id="board-canvas"></canvas>
+        <div id="scoring-banner" class="scoring-banner" hidden>
+          <p><strong>Scoring phase.</strong> Tap dead stones to mark/unmark them, then finalize.</p>
+          <div class="btn-row">
+            <button id="btn-finalize" class="btn-primary small">Finalize Score</button>
+            <button id="btn-resume" class="btn-secondary small">Resume Play</button>
+          </div>
+        </div>
+      </div>
+      <aside class="side-panel">
+        <div class="turn-indicator" id="turn-indicator"></div>
+
+        <div class="stat-row" id="stat-row"></div>
+
+        <div class="btn-row">
+          <button id="btn-hint" class="btn-secondary">💡 Hint</button>
+          <button id="btn-undo" class="btn-secondary">↩ Undo</button>
+          <button id="btn-rules" class="btn-secondary">📖 Rules</button>
+        </div>
+        <div class="btn-row" id="go-controls">
+          <button id="btn-pass" class="btn-secondary">Pass</button>
+          <button id="btn-resign" class="btn-secondary">Resign</button>
+        </div>
+        <div class="btn-row">
+          <button id="btn-newgame" class="btn-secondary">🔄 New Game</button>
+        </div>
+
+        <div id="rules-panel" class="rules-panel" hidden></div>
+        <div id="message-log" class="message-log"></div>
+      </aside>
+    </div>
+  </section>
+
+</main>
+
+<div id="toast" class="toast" hidden></div>
+
+<footer class="foot">
+  <p>Built for casual play &amp; learning · Go uses Chinese (area) scoring · AI is a heuristic engine, not a professional-strength bot.</p>
+</footer>
+
+<script src="js/board.js"></script>
+<script src="js/go.js"></script>
+<script src="js/gomoku.js"></script>
+<script src="js/rules.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
