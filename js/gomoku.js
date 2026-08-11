@@ -1,4 +1,4 @@
-/* Gomoku (五子棋 Five in a Row) game engine + pattern-based AI. */
+/* 五子棋 Wuziqi (Five in a Row) game engine + pattern-based AI. */
 class GomokuGame {
   constructor(size = 15) {
     this.size = size;

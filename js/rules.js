@@ -38,7 +38,7 @@ const RULES = {
     ],
   },
   gomoku: {
-    title: '五子棋 Gomoku (Five in a Row) — Rules',
+    title: '五子棋 Wǔzǐqí (Five in a Row) — Rules',
     sections: [
       {
         h: 'Goal',

@@ -1,4 +1,4 @@
-/* Shared canvas board renderer used by both Go and Gomoku. */
+/* Shared canvas board renderer used by both Go and Five in a Row. */
 class BoardView {
   constructor(canvas, opts) {
     this.canvas = canvas;

@@ -54,7 +54,7 @@ const App = (() => {
   function openModeScreen(key) {
     gameKey = key;
     setup = { boardSize: 9, mode: '2p', difficulty: 'medium', humanColor: 1 };
-    $('mode-title').textContent = key === 'go' ? '围棋 Go — Choose how to play' : '五子棋 Gomoku — Choose how to play';
+    $('mode-title').textContent = key === 'go' ? '围棋 Go — Choose how to play' : '五子棋 Five in a Row — Choose how to play';
 
     const sizeBlock = $('block-boardsize');
     if (key === 'go') {
