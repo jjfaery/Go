@@ -71,6 +71,9 @@ main#app {
   margin: 0 auto;
   padding: 28px 20px 60px;
 }
+main#app.wide-layout {
+  max-width: 1480px;
+}
 .screen { display: none; }
 .screen.active { display: block; animation: fadein .25s ease; }
 @keyframes fadein { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
@@ -127,6 +130,8 @@ main#app {
 }
 .pill:hover { border-color: var(--accent); }
 .pill.selected { background: var(--accent); border-color: var(--accent); color: #1a1206; font-weight: 600; }
+
+.mode-desc { margin-top: 12px; font-size: 0.88rem; color: var(--text-dim); line-height: 1.55; max-width: 560px; }
 
 .btn-primary {
   background: var(--accent);

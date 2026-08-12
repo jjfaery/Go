@@ -8,6 +8,7 @@ class BoardView {
     this.margin = opts.margin ?? 30;
     this.onCellClick = opts.onCellClick || (() => {});
     this.onHover = opts.onHover || (() => {});
+    this.onResize = opts.onResize || (() => {});
     this.showCoords = opts.showCoords !== false;
     this.hoverCell = null;
     this.dpr = window.devicePixelRatio || 1;
@@ -30,7 +31,7 @@ class BoardView {
   resize() {
     const parent = this.canvas.parentElement;
     if (!parent) return;
-    const cssSize = Math.max(240, Math.min(parent.clientWidth, window.innerHeight * 0.68, 620));
+    const cssSize = Math.max(240, Math.min(parent.clientWidth, window.innerHeight * 0.8, 880));
     this.cssSize = cssSize;
     this.canvas.style.width = cssSize + 'px';
     this.canvas.style.height = cssSize + 'px';
@@ -38,6 +39,9 @@ class BoardView {
     this.canvas.height = Math.round(cssSize * this.dpr);
     this.ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
     this.cell = (cssSize - this.margin * 2) / (this.size - 1);
+    // Changing canvas.width/height wipes its pixel buffer, so whoever owns the
+    // game state needs a chance to redraw immediately after any resize.
+    this.onResize();
   }
 
   gridToPixel(x, y) {

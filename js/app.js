@@ -48,7 +48,9 @@ const App = (() => {
   function showScreen(name) {
     Object.values(screens).forEach((el) => el.classList.remove('active'));
     screens['screen-' + name].classList.add('active');
+    $('app').classList.toggle('wide-layout', name === 'game');
     if (name !== 'game') aiThinking = false;
+    if (boardView && name === 'game') setTimeout(() => boardView.resize(), 0);
   }
 
   function openModeScreen(key) {
@@ -76,7 +78,17 @@ const App = (() => {
     $('block-difficulty').hidden = true;
     $('block-color').hidden = true;
     $('btn-start-game').hidden = false;
+    updateModeDesc();
     showScreen('mode');
+  }
+
+  const MODE_DESCRIPTIONS = {
+    '2p': 'Two people take turns on this device. No computer involved.',
+    cpu: 'Play against the computer at the difficulty and color you choose below.',
+    learn: 'Play a real game against a friendly computer opponent (Medium difficulty, you play Black and move first). A strong candidate move stays highlighted on the board every turn, and the rules panel opens automatically — so you see real responses and get guidance the whole game, instead of just moving both colors yourself.',
+  };
+  function updateModeDesc() {
+    $('mode-desc').textContent = MODE_DESCRIPTIONS[setup.mode] || '';
   }
 
   function markSelected(rowId, btn) {
@@ -102,12 +114,18 @@ const App = (() => {
     if (!btn) return;
     setup.mode = btn.dataset.mode;
     markSelected('mode-row', btn);
+    updateModeDesc();
     const isCpu = setup.mode === 'cpu';
     $('block-difficulty').hidden = !isCpu;
     $('block-color').hidden = !isCpu;
     if (isCpu) {
       resetPillSelection('difficulty-row', 'difficulty', 'medium');
       resetPillSelection('color-row', 'color', '1');
+      setup.difficulty = 'medium';
+      setup.humanColor = 1;
+    } else if (setup.mode === 'learn') {
+      // Learn mode always pairs you against a real, moderately-strong opponent —
+      // no difficulty/color picker, so beginners aren't asked to make that call yet.
       setup.difficulty = 'medium';
       setup.humanColor = 1;
     }
@@ -124,14 +142,27 @@ const App = (() => {
     }
     setupBoardView();
     $('go-controls').style.display = gameKey === 'go' ? '' : 'none';
-    $('rules-panel').hidden = true;
-    rulesVisible = false;
-    if (gameKey === 'go') $('rules-panel').innerHTML = buildRulesHTML('go');
-    else $('rules-panel').innerHTML = buildRulesHTML('gomoku');
-    log('New game started.', true);
+    $('rules-panel').innerHTML = buildRulesHTML(gameKey === 'go' ? 'go' : 'gomoku');
+    rulesVisible = setup.mode === 'learn';
+    $('rules-panel').hidden = !rulesVisible;
+    if (setup.mode === 'learn') {
+      log('Learn mode: you\'re Black, the computer (White, Medium) plays real replies. The green ring shows a strong candidate move each turn — think about why before you play it.', true);
+    } else {
+      log('New game started.', true);
+    }
     showScreen('game');
-    render();
     maybeTriggerAI();
+    maybeAutoHint();
+    render();
+  }
+
+  function maybeAutoHint() {
+    hintMove = null;
+    if (setup.mode !== 'learn' || !game || game.gameOver) return;
+    if (gameKey === 'go' && game.scoringPhase) return;
+    if (!isHumanTurn()) return;
+    const color = game.current;
+    hintMove = gameKey === 'go' ? GoAI.suggest(game, color, 'hard') : GomokuAI.suggest(game, color, 'hard');
   }
 
   function setupBoardView() {
@@ -143,12 +174,13 @@ const App = (() => {
       starPoints: star,
       onCellClick: handleCellClick,
       onHover: () => render(),
+      onResize: () => render(),
       showCoords: true,
     });
   }
 
   function isHumanTurn() {
-    if (setup.mode !== 'cpu') return true;
+    if (setup.mode === '2p') return true;
     return game.current === setup.humanColor;
   }
 
@@ -180,9 +212,10 @@ const App = (() => {
       if (game.gameOver && game.winner) log(`${colorName(game.winner)} wins with five in a row!`, true);
       else if (game.gameOver) log('Board full — draw.', true);
     }
-    render();
     checkGoEndState();
     maybeTriggerAI();
+    maybeAutoHint();
+    render();
   }
 
   function illegalReason(reason) {
@@ -195,7 +228,7 @@ const App = (() => {
   function colorName(c) { return c === 1 ? 'Black' : 'White'; }
 
   function maybeTriggerAI() {
-    if (setup.mode !== 'cpu' || !game || game.gameOver) return;
+    if (setup.mode === '2p' || !game || game.gameOver) return;
     if (gameKey === 'go' && game.scoringPhase) return;
     if (game.current === setup.humanColor) return;
     aiThinking = true;
@@ -226,9 +259,10 @@ const App = (() => {
       }
     }
     aiThinking = false;
-    render();
     checkGoEndState();
     maybeTriggerAI();
+    maybeAutoHint();
+    render();
   }
 
   function checkGoEndState() {
@@ -260,17 +294,16 @@ const App = (() => {
     aiToken++; // invalidate any pending computer move
     aiThinking = false;
     if (gameKey === 'go') {
-      if (game.scoringPhase) { game.resumePlay(); render(); checkGoEndState(); return; }
+      if (game.scoringPhase) { game.resumePlay(); checkGoEndState(); maybeAutoHint(); render(); return; }
       if (!game.undo()) { toast('Nothing to undo.'); return; }
-      if (setup.mode === 'cpu' && game.undoStack.length && game.current !== setup.humanColor) game.undo();
+      if (setup.mode !== '2p' && game.undoStack.length && game.current !== setup.humanColor) game.undo();
     } else {
       if (!game.undo()) { toast('Nothing to undo.'); return; }
-      if (setup.mode === 'cpu' && game.current !== setup.humanColor) game.undo();
+      if (setup.mode !== '2p' && game.current !== setup.humanColor) game.undo();
     }
-    hintMove = null;
-    aiThinking = false;
-    render();
     checkGoEndState();
+    maybeAutoHint();
+    render();
   }
 
   function onPass() {
@@ -279,9 +312,10 @@ const App = (() => {
     const passer = game.current;
     game.pass();
     log(`${colorName(passer)} passes.`);
-    render();
     checkGoEndState();
     maybeTriggerAI();
+    maybeAutoHint();
+    render();
   }
 
   function onResign() {
@@ -304,9 +338,10 @@ const App = (() => {
     if (!game || gameKey !== 'go') return;
     game.resumePlay();
     log('Resumed play.');
-    render();
     checkGoEndState();
     maybeTriggerAI();
+    maybeAutoHint();
+    render();
   }
 
   function toggleRules() {
@@ -378,7 +413,7 @@ const App = (() => {
       turnEl.innerHTML = `<span class="badge">Scoring phase</span>`;
     } else {
       const stoneIcon = game.current === 1 ? '⚫' : '⚪';
-      const who = setup.mode === 'cpu' ? (game.current === setup.humanColor ? 'Your turn' : 'Computer thinking…') : `${colorName(game.current)}'s turn`;
+      const who = setup.mode !== '2p' ? (game.current === setup.humanColor ? 'Your turn' : 'Computer thinking…') : `${colorName(game.current)}'s turn`;
       turnEl.innerHTML = `<span class="stone-dot ${game.current === 1 ? 'b' : 'w'}"></span> ${stoneIcon} ${who}`;
     }
 
